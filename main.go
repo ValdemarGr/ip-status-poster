@@ -110,6 +110,27 @@ func authedRequest(url string, token string, sessionId string) *http.Response {
 	return resp
 }
 
+func renewLease(token string, sessionId string) *http.Response {
+	cookieHeader := fmt.Sprintf("theme-value=css/theme/dark/; lang=en; PHPSESSID=%s; auth=%s", sessionId, token)
+
+	client := &http.Client{}
+	req, _ := http.NewRequest(http.MethodGet, "http://192.168.87.1/", nil)
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("Cache-Control", "max-age=0")
+	req.Header.Set("Upgrade-Insecure-Requests", "1")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+	req.Header.Set("Referer", "http://192.168.87.1/")
+	req.Header.Set("Accept-Language", "en-AU,en-GB;q=0.9,en-US;q=0.8,en;q=0.7,da;q=0.6")
+	req.Header.Set("If-None-Match", "\"4138254307\"")
+	req.Header.Set("If-Modified-Since", "Fri, 30 Aug 2019 01:57:24 GMT")
+	req.Header.Set("Cookie", cookieHeader)
+
+	resp, _ := client.Do(req)
+
+	return resp
+}
+
 func main() {
 	sessionId := getSessionId()
 
@@ -120,8 +141,7 @@ func main() {
 
 	token := login(secondRound, sessionId)
 
-	fmt.Println(sessionId)
-	fmt.Println(token)
+	renewLease(token, sessionId)
 
 	ipResp := authedRequest("http://192.168.87.1/api/v1/dhcp/v4/1/IPAddressRT", token, sessionId)
 	ips := IPFetch{}
